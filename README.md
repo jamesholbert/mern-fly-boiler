@@ -1,16 +1,19 @@
 This is my MERN stack boilerplate, complete with a few extra additions for your projects:
 * Mongo/Mongoose
-** Sample model and route
 * Express
 * React
 * Node.js
 
 Also:
-* socket.io for live server updates
+* sample mongoose models and routes
+* socket.io for live server updates with access to database
 * local auth using JWT
 * google oauth2
 
-#### To get started, rename `.env.template` to `.env` and replace the environment variables with your project specific values
+### To get started, rename `.env.template` to `.env` and replace the environment variables with your project specific values
+
+### Then run `yarn install` and `yarn build`
+
 
 The front end was initially bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
