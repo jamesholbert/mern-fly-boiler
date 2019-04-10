@@ -1,0 +1,11 @@
+# font files
+*.ttf -diff
+*.eot -diff
+*.svg -diff
+*.woff -diff
+
+# built js and css files
+static/* -diff
+*/service-worker.js -diff
+
+yarn.lock -diff
