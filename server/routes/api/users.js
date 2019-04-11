@@ -120,14 +120,14 @@ router
 
     Users.findOne({ email: req.body.email, token: req.body.token }, (err, user) => {
       if(user){
-        io.in(req.session.socketId).emit('secure', {data: 'super secure'})
-        console.log('successful secure end point')
+        io.in(req.session.socketId).emit('secure', {data: 'secure from socket'})
+        console.log('successful secure end point access')
         
-        res.status(201).json({'status': 1})
+        res.status(201).json({'data': 'secure from endpoint'})
       }
       else {
         console.log('not allowed')
-        res.status(403).json({'status': 0})
+        res.status(403).json({'data': 0})
       }
     })
   })

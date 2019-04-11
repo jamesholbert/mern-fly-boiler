@@ -77,7 +77,7 @@ io.on('connection', socket => {
 
     socket.on('socketping', client => {
       console.log('ping')
-      socket.emit('pong', 'pong')
+      socket.emit('pong', 'socket pong')
     })
 })
 

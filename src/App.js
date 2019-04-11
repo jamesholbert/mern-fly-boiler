@@ -1,6 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import logo from './logo.svg';
 import './App.css';
+import styled from 'styled-components'
 
 import GoogleButton from './components/googleButton'
 import LogoutButton from './components/logoutButton'
@@ -20,14 +21,20 @@ class App extends Component {
     token: '',
     name: '',
     socket: openSocket(DOMAIN),
-    image: ''
+    image: '',
+    messages: []
   }
 
+  appendToMessages = message => {
+    let { messages } = this.state
+    messages.unshift(message)
+    this.setState({messages})
+  }
 
   endPointPing = () => {
     fetch('/ping')
-      .then(res=>res.json()
-      .then(res=>this.setState({response: res})))
+      .then(res=>res.json())
+      .then(res=>this.appendToMessages(res))
   }
 
   socketPing = () => {
@@ -83,7 +90,7 @@ class App extends Component {
       body: JSON.stringify({token, email, socketId })
 
     }).then(res=>res.json()).then(res=>{
-      console.log(res)
+      this.appendToMessages(res.data)
     })
     .catch((error) => {
       console.log('request had error')
@@ -93,8 +100,8 @@ class App extends Component {
 
   componentDidMount = () => {
     const { socket } = this.state
-    socket.on('secure', thing => console.log(thing));
-    socket.on('pong', mes => console.log(mes))
+    socket.on('secure', mes => this.appendToMessages(mes.data));
+    socket.on('pong', mes => this.appendToMessages(mes))
 
     const oldJwt = window.localStorage.getItem('jwt')
     const oldName = window.localStorage.getItem('name')
@@ -126,7 +133,7 @@ class App extends Component {
   logout = e => {
     e.preventDefault()
     
-    this.setState({loggedIn: false, name: '', image: '', token: '', email: '', emailField: ''})
+    this.setState({loggedIn: false, name: '', image: '', token: '', email: '', emailField: '', messages: []})
     
     window.localStorage.setItem("jwt", '');
     window.localStorage.setItem("name", '');
@@ -135,7 +142,7 @@ class App extends Component {
   }
 
   render() {
-    const { emailField, password, errorMessage, token, name, image } = this.state
+    const { emailField, password, errorMessage, token, name, image, messages } = this.state
 
     return (
       <div className="App">
@@ -165,7 +172,11 @@ class App extends Component {
           {!token && <GoogleButton />}
           {token && <button onClick={this.trySecureEndpoint}>Secure End point</button>}
           {token && <LogoutButton name={name} handleClick={this.logout} />}
-
+          {messages.length ?
+            <Responses> 
+              {messages.map((mes, i)=><div key={i}>{mes}</div>)}
+            </Responses>
+          : null}
         </header>
       </div>
     );
@@ -173,3 +184,16 @@ class App extends Component {
 }
 
 export default App;
+
+const Responses = styled.div`
+  position: fixed;
+  bottom: 5px;
+  max-height: 200px;
+  max-width: 25%;
+  min-height: 200px;
+  min-width: 25%;
+  overflow: scroll;
+  border: solid 1px white;
+  border-radius: 3px;
+  font-size: 15px;
+`
