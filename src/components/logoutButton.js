@@ -6,7 +6,6 @@ const Container = styled.a`
 
 `
 
-
 const LogoutButton = ({ name, handleClick }) => (
 	<Container href='' onClick={handleClick}>
 	  <div>

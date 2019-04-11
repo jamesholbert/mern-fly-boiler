@@ -2,6 +2,8 @@ import React from 'react'
 
 import styled from 'styled-components'
 
+import { DOMAIN } from '../helpers'
+
 const Container = styled.a`
 	-webkit-tap-highlight-color: transparent;
 	text-decoration: none;
@@ -34,7 +36,7 @@ const SvgIcon = styled.span`
 `
 
 const GoogleButton = () => (
-	<Container href="http://localhost:8080/api/google/auth/google" className="button">
+	<Container href={DOMAIN + "api/google/auth/google"} className="button">
 	  <div>
 	    <SvgIcon className="svgIcon t-popup-svg">
 	      <svg
