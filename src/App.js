@@ -75,7 +75,7 @@ class App extends Component {
   trySecureEndpoint = () => {
     const { token, email, socket: { id: socketId } } = this.state
 
-    fetch('http://localhost:8080/api/users/secure', {
+    fetch(DOMAIN + 'api/users/secure', {
       method: 'POST',
       "headers": {
         "Content-Type": "application/json; charset=utf-8"
@@ -95,12 +95,6 @@ class App extends Component {
     const { socket } = this.state
     socket.on('secure', thing => console.log(thing));
     socket.on('pong', mes => console.log(mes))
-    // socket.on('connect', () => { // TIP: you can avoid listening on `connect` and listen on events directly too!
-    //   socket.emit('ferret', 'tobi', 'woot', function (data) { // args are sent in order to acknowledgement function
-    //     console.log(data); // data will be 'tobi says woot'
-    //   });
-    //   console.log('connected')
-    // });
 
     const oldJwt = window.localStorage.getItem('jwt')
     const oldName = window.localStorage.getItem('name')
@@ -116,6 +110,7 @@ class App extends Component {
       this.setState({token, name: parsedName, loggedIn: true, image, email})
       
       window.localStorage.setItem("jwt", token);
+      // once refreshing checks server for auth, we won't need these because we'll get them when we authenticate
       window.localStorage.setItem("name", parsedName);
       window.localStorage.setItem("image", image);
       window.localStorage.setItem("email", email);
@@ -131,9 +126,8 @@ class App extends Component {
   logout = e => {
     e.preventDefault()
     
-    window.localStorage.setItem("jwt", '');
     this.setState({loggedIn: false, name: '', image: '', token: '', email: '', emailField: ''})
-     
+    
     window.localStorage.setItem("jwt", '');
     window.localStorage.setItem("name", '');
     window.localStorage.setItem("image", '');

@@ -1,21 +1,25 @@
 This is my MERN stack boilerplate, complete with a few extra additions for your projects:
+
+#### Core:
 * Mongo/Mongoose
 * Express
 * React
 * Node.js
 
-Also:
+#### Extras:
 * sample mongoose models and routes
-* socket.io for live server updates with access to database
 * local auth using JWT
 * google oauth2
+* socket.io for live server updates with access to database
+* React Router (not yet fully implemented)
+* Redux complete with reducer factories (coming soon)
 
-### To get started, rename `.env.template` to `.env` and replace the environment variables with your project specific values
-
-### Then run `yarn install` and `yarn build`
-
-
-The front end was initially bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+### Getting Started:
+* rename or copy `.env.template` to `.env`
+* fill in appropriate variables in `.env`
+* `yarn install`
+* `yarn build`
+* `yarn start`
 
 ## Available Scripts
 
@@ -24,8 +28,8 @@ The front end was initially bootstrapped with [Create React App](https://github.
 ### `yarn start`
 
 Runs the node.js server, listens on port 8080 during development. `http://localhost:8080`
-Serves up build files if they exist. For development run the React Environment instead.
-Also connects to mongo server.
+Serves up build files (won't work if you haven't ran `yarn build`). For development run the 
+React Environment instead.
 
 ### `yarn watch`
 
@@ -33,7 +37,8 @@ Launches react development environment on port 3000. `http://localhost:3000`
 
 ### `yarn build`
 
-Creates static build files for front end.
-Only necessary in production environment.
+Creates static build files for front end. Only necessary in production environment and if you're testing google oauth, the redirect _must_ take you to `http://localhost:8080/`, so you'll need to run `yarn build` and restart the nodemon server if you've made any changes to the front end that you're expecting to see.
 
-### Procfile is for deployment on Heroku
+### Procfile is for deployment on Heroku, don't forget to add the necessary `config vars` found in `.env`
+
+The front end was initially bootstrapped with [Create React App](https://github.com/facebook/create-react-app).

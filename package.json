@@ -31,11 +31,7 @@
   "scripts": {
     "start": "nodemon server/index.js --watch server --exec babel-node --presets env",
     "watch": "react-scripts start",
-    "watch_DEVMODE": "yarn dev_mode_true && react-scripts start",
-    "dev_mode_true": "cp ./src/helpers/dev_mode_true.js ./src/config.js",
-    "dev_mode_false": "cp ./src/helpers/dev_mode_false.js ./src/config.js",
     "build": "react-scripts build",
-    "build_DEVMODE": "yarn dev_mode_false && react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject"
   },

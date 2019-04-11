@@ -1,4 +1,5 @@
 require('dotenv').config();
+
 import cors from 'cors';
 import http from 'http';
 import morgan from 'morgan';
@@ -40,7 +41,7 @@ const db = mongoose
     process.env.DB_ADDRESS,
     { useNewUrlParser: true }
   )
-  .then(res => console.log('Now connected to the Better Tabletop database'));
+  .then(res => console.log('Now connected to database'));
 require('./models/users-model.js');
 require('./config/passport');
 app.use(require('./routes'));
