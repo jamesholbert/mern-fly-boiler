@@ -105,7 +105,7 @@ class App extends Component {
   //   });    
   // }
 
-  tryCurrentEndpoint = () => { // attempt at using auth.js secure auth
+  tryCurrentEndpoint = () => {
     const { token, email } = this.state
 
     fetch(DOMAIN + 'api/users/current', {
@@ -127,15 +127,14 @@ class App extends Component {
 
   componentDidMount = () => {
     const { socket } = this.state
-    socket.on('secure', mes => this.appendToMessages(mes.data));
-    socket.on('pong', mes => this.appendToMessages(mes))
+    socket.on('secure', mes => this.appendToMessages('secure: '+mes.data));
+    socket.on('pong', mes => this.appendToMessages('pong: '+mes))
 
     const cookies = new Cookies()
     const oldJwt = cookies.get('jwt')
     const oldEmail = cookies.get('email')
 
     if(oldJwt){
-      // console.log(oldJwt, oldEmail)
       this.attemptLogin(oldEmail, null, oldJwt, 'refreshlogin')
     }
     else {
