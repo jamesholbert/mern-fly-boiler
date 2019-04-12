@@ -55,12 +55,7 @@ router.post('/newuser', auth.optional, (req, res, next) => {
 
 //POST login route (optional, everyone has access)
 router.post('/login', auth.optional, (req, res, next) => {
-  console.log('/login in users.js')
-// console.log(req.headers.cookie);
   const { body: { user } } = req;
-console.log(user);
-if(user.token)
-user.password = user.token
 
   if(!user.email) {
     return res.status(422).json({
@@ -77,13 +72,8 @@ user.password = user.token
       },
     });
   }
-console.log('here')
 
   return passport.authenticate('local', { session: false }, (err, passportUser, info) => {
-console.log('passportUser');
-console.log(err);
-console.log(passportUser);
-console.log(info);
     if(err) {
       return next(err);
     }
@@ -93,7 +83,7 @@ console.log(info);
       const pUser = passportUser;
       pUser.token = passportUser.generateJWT();
 
-      // Users.findOne({email: pUser.email}, (err, user) => {
+      // Users.findOne({email: pUser.email}, (err, user) => { // unsure why this doesn't need to save
       //   user.token = pUser.token;
       //   // user.save()
       // })
@@ -111,7 +101,6 @@ console.log(info);
 
 //GET current route (required, only authenticated users have access)
 router.get('/current', auth.required, (req, res, next) => {
-console.log(req.payload);
   const { payload: { id } } = req;
 
   return Users.findById(id)
@@ -124,23 +113,37 @@ console.log(req.payload);
     });
 });
 
-router
-  .route('/secure')
-  .post((req, res) => {
-    const io = req.app.get('io')
+//POST current route (required, only authenticated users have access)
+router.post('/refreshlogin', auth.optional, (req, res, next) => {
+  const { payload: { id } } = req;
 
-    Users.findOne({ email: req.body.email, token: req.body.token }, (err, user) => {
-      if(user){
-        io.in(req.session.socketId).emit('secure', {data: 'secure from socket'})
-        console.log('successful secure end point access')
+  return Users.findById(id)
+    .then((user) => {
+      if(!user) {
+        return res.sendStatus(400);
+      }
+
+      return res.json({ user: user.toAuthJSON() });
+    });
+});
+
+// router
+//   .route('/secure')
+//   .post((req, res) => {
+//     const io = req.app.get('io')
+
+//     Users.findOne({ email: req.body.email, token: req.body.token }, (err, user) => {
+//       if(user){
+//         io.in(req.session.socketId).emit('secure', {data: 'secure from socket'})
+//         console.log('successful secure end point access')
         
-        res.status(201).json({'data': 'secure from endpoint'})
-      }
-      else {
-        console.log('not allowed')
-        res.status(403).json({'data': 0})
-      }
-    })
-  })
+//         res.status(201).json({'data': 'secure from endpoint'})
+//       }
+//       else {
+//         console.log('not allowed')
+//         res.status(403).json({'data': 0})
+//       }
+//     })
+//   })
 
 module.exports = router;

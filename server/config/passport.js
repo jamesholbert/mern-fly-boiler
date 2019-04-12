@@ -8,9 +8,7 @@ const User = mongoose.model('Users');
 passport.use(new LocalStrategy({
   usernameField: 'user[email]',
   passwordField: 'user[password]',
-  // tokenField: 'user[token]',
 }, (email, password, done) => {
-  console.log('passport.js')
   User.findOne({ email })
     .then((user) => {
       if(!user || !user.validatePassword(password)) {

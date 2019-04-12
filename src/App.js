@@ -44,10 +44,10 @@ class App extends Component {
     this.state.socket.emit('socketping', ()=>console.log('tried'))
   }
 
-  attemptLogin = (emailField, password = null, token = null) => {
+  attemptLogin = (emailField, password = null, token = null, endpoint = 'login') => {
     const user = token ? {email: emailField, token} : {email: emailField, password}
 
-    fetch('/api/users/login', {
+    fetch('/api/users/'+endpoint, {
       method: 'POST',
       headers: {
           "Content-Type": "application/json; charset=utf-8",
@@ -64,11 +64,6 @@ class App extends Component {
         const cookies = new Cookies()
         cookies.set("jwt", token, { path: '/', expires: new Date(Date.now()+604800000) });
         cookies.set("email", email, { path: '/', expires: new Date(Date.now()+604800000) });
-
-        // window.localStorage.setItem("jwt", token);
-        window.localStorage.setItem("name", parsedName);
-        window.localStorage.setItem("image", image);
-        // window.localStorage.setItem("email", email);
       }
       else if (res.errors) {
         const keys = Object.keys(res.errors)
@@ -88,30 +83,27 @@ class App extends Component {
   handleLoginLocal = () => {
     const { emailField, password } = this.state
 
-    // const cookies = new Cookies()
-    // const token = cookies.get('jwt')
-
     this.attemptLogin(emailField, password)
   }
 
-  trySecureEndpoint = () => {
-    const { token, email, socket: { id: socketId } } = this.state
+  // trySecureEndpoint = () => {
+  //   const { token, email, socket: { id: socketId } } = this.state
 
-    fetch(DOMAIN + 'api/users/secure', {
-      method: 'POST',
-      "headers": {
-        "Content-Type": "application/json; charset=utf-8"
-      },
-      body: JSON.stringify({token, email, socketId })
+  //   fetch(DOMAIN + 'api/users/secure', {
+  //     method: 'POST',
+  //     "headers": {
+  //       "Content-Type": "application/json; charset=utf-8"
+  //     },
+  //     body: JSON.stringify({token, email, socketId })
 
-    }).then(res=>res.json()).then(res=>{
-      this.appendToMessages(res.data)
-    })
-    .catch((error) => {
-      console.log('request had error')
-      this.setState({errorMessage: 'invalid endpoint attempt'})      
-    });    
-  }
+  //   }).then(res=>res.json()).then(res=>{
+  //     this.appendToMessages(res.data)
+  //   })
+  //   .catch((error) => {
+  //     console.log('request had error')
+  //     this.setState({errorMessage: 'invalid endpoint attempt'})      
+  //   });    
+  // }
 
   tryCurrentEndpoint = () => { // attempt at using auth.js secure auth
     const { token, email } = this.state
@@ -121,8 +113,7 @@ class App extends Component {
       "headers": {
         "Content-Type": "application/json; charset=utf-8",
           authorization: token && 'Token ' + token
-      },
-      // body: JSON.stringify({token, email, socketId })
+      }
 
     }).then(res=>res.json()).then(res=>{
       console.log(res)
@@ -144,15 +135,10 @@ class App extends Component {
     const oldEmail = cookies.get('email')
 
     if(oldJwt){
-      console.log(oldJwt, oldEmail)
-      this.attemptLogin(oldEmail, null, oldJwt)
+      // console.log(oldJwt, oldEmail)
+      this.attemptLogin(oldEmail, null, oldJwt, 'refreshlogin')
     }
     else {
-
-      const oldName = window.localStorage.getItem('name')
-      const oldImage = window.localStorage.getItem('image')
-      // const oldEmail = window.localStorage.getItem('email')
-
       const currentUrl = document.location.href
       const requestHasToken = currentUrl.indexOf('token=') > -1
       if (requestHasToken) {
@@ -163,16 +149,8 @@ class App extends Component {
         
         cookies.set("jwt", token, { path: '/', expires: new Date(Date.now()+604800000) });
         cookies.set("email", email, { path: '/', expires: new Date(Date.now()+604800000) });
-        // once refreshing checks server for auth, we won't need these because we'll get them when we authenticate
-        window.localStorage.setItem("name", parsedName);
-        window.localStorage.setItem("image", image);
-        // window.localStorage.setItem("email", email);
 
         this.props.history.push("/");
-      }
-      else if (oldJwt && oldName) {
-        // TODO actually send creds to server, if JWT is still good, login and send profile image to client
-        this.setState({token: oldJwt, name: oldName, image: oldImage, email: oldEmail})
       }
     }
   }
@@ -185,10 +163,6 @@ class App extends Component {
     const cookies = new Cookies()
     cookies.remove('jwt', { path: '/' });
     cookies.remove('email', { path: '/' });
-    
-    window.localStorage.setItem("name", '');
-    window.localStorage.setItem("image", '');
-    // window.localStorage.setItem("email", '');
   }
 
   render() {
@@ -220,8 +194,8 @@ class App extends Component {
           }
           {errorMessage && <div>{errorMessage}</div>}
           {!token && <GoogleButton />}
-          {token && <button onClick={this.trySecureEndpoint}>Secure End point</button>}
-          {token && <button onClick={this.tryCurrentEndpoint}>Current Secure End point</button>}
+          {/*token && <button onClick={this.trySecureEndpoint}>Secure End point</button>*/}
+          {token && <button onClick={this.tryCurrentEndpoint}>Secure End point</button>}
           {token && <LogoutButton name={name} handleClick={this.logout} />}
           {messages.length ?
             <Responses>

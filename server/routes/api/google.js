@@ -26,11 +26,16 @@ router.get('/auth/google', passport.authenticate('google', { scope: 'profile ema
 //   which, in this example, will redirect the user to the home page.
 
 router.get('/auth/google/callback', passport.authenticate('google', { failureRedirect: '/login' }), function (req, res) {
-	const addToken = '?token='+req.user.token
 	const addName = '&name='+req.user.username
 	const addImage = '&image='+req.user.profileImage
 	const addEmail = '&email='+req.user.email
-	console.log(req.user)
+
+	const user = req.user
+	user.token = req.user.generateJWT();
+
+    res.user = user.toAuthJSON();
+	const addToken = '?token='+user.token
+
 	res.redirect(process.env.BASE_CALLBACK_URI + addToken + addName + addImage + addEmail+'&burner')
 });
 
