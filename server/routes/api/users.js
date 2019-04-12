@@ -35,7 +35,7 @@ router.post('/newuser', auth.optional, (req, res, next) => {
       });      
     }
     else if(existingUser){
-      console.log('user exists from oauth and password is now set')
+      console.log('user exists only from oauth and password is now set')
       existingUser.setPassword(user.password)
 
       return existingUser.save()
@@ -55,7 +55,12 @@ router.post('/newuser', auth.optional, (req, res, next) => {
 
 //POST login route (optional, everyone has access)
 router.post('/login', auth.optional, (req, res, next) => {
+  console.log('/login in users.js')
+// console.log(req.headers.cookie);
   const { body: { user } } = req;
+console.log(user);
+if(user.token)
+user.password = user.token
 
   if(!user.email) {
     return res.status(422).json({
@@ -65,15 +70,20 @@ router.post('/login', auth.optional, (req, res, next) => {
     });
   }
 
-  if(!user.password) {
+  if(!user.password && !user.token) {
     return res.status(422).json({
       errors: {
         password: 'is required',
       },
     });
   }
+console.log('here')
 
   return passport.authenticate('local', { session: false }, (err, passportUser, info) => {
+console.log('passportUser');
+console.log(err);
+console.log(passportUser);
+console.log(info);
     if(err) {
       return next(err);
     }
@@ -83,10 +93,10 @@ router.post('/login', auth.optional, (req, res, next) => {
       const pUser = passportUser;
       pUser.token = passportUser.generateJWT();
 
-      Users.findOne({email: pUser.email}, (err, user) => {
-        user.token = pUser.token;
-        user.save()
-      })
+      // Users.findOne({email: pUser.email}, (err, user) => {
+      //   user.token = pUser.token;
+      //   // user.save()
+      // })
 
       return res.json({ user: pUser.toAuthJSON() });
     }
@@ -101,6 +111,7 @@ router.post('/login', auth.optional, (req, res, next) => {
 
 //GET current route (required, only authenticated users have access)
 router.get('/current', auth.required, (req, res, next) => {
+console.log(req.payload);
   const { payload: { id } } = req;
 
   return Users.findById(id)

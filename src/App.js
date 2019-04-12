@@ -1,12 +1,14 @@
 import React, { Component, Fragment } from 'react';
 import logo from './logo.svg';
 import './App.css';
+
 import styled from 'styled-components'
+import Cookies from 'universal-cookie'
+
+import openSocket from 'socket.io-client';
 
 import GoogleButton from './components/googleButton'
 import LogoutButton from './components/logoutButton'
-
-import openSocket from 'socket.io-client';
 
 import { DOMAIN, parseUrl } from './helpers'
 
@@ -42,14 +44,14 @@ class App extends Component {
     this.state.socket.emit('socketping', ()=>console.log('tried'))
   }
 
-  handleLoginLocal = () => {
-    const { emailField, password } = this.state
-    const user = {email: emailField, password}
+  attemptLogin = (emailField, password = null, token = null) => {
+    const user = token ? {email: emailField, token} : {email: emailField, password}
 
     fetch('/api/users/login', {
       method: 'POST',
       headers: {
           "Content-Type": "application/json; charset=utf-8",
+          authorization: token && 'Token ' + token
       },
       body: JSON.stringify({user})
     }).then(res=>res.json()).then(res=>{
@@ -58,11 +60,15 @@ class App extends Component {
         const parsedName = name.indexOf(' ') > -1 ? name.split(' ')[0] : name
         
         this.setState({loggedIn: true, errorMessage: '', password: '', token, name: parsedName, image, email})
+        
+        const cookies = new Cookies()
+        cookies.set("jwt", token, { path: '/', expires: new Date(Date.now()+604800000) });
+        cookies.set("email", email, { path: '/', expires: new Date(Date.now()+604800000) });
 
-        window.localStorage.setItem("jwt", token);
+        // window.localStorage.setItem("jwt", token);
         window.localStorage.setItem("name", parsedName);
         window.localStorage.setItem("image", image);
-        window.localStorage.setItem("email", email);
+        // window.localStorage.setItem("email", email);
       }
       else if (res.errors) {
         const keys = Object.keys(res.errors)
@@ -77,6 +83,15 @@ class App extends Component {
       console.log('request had error')
       this.setState({errorMessage: 'invalid login'})      
     });
+  }
+
+  handleLoginLocal = () => {
+    const { emailField, password } = this.state
+
+    // const cookies = new Cookies()
+    // const token = cookies.get('jwt')
+
+    this.attemptLogin(emailField, password)
   }
 
   trySecureEndpoint = () => {
@@ -98,35 +113,67 @@ class App extends Component {
     });    
   }
 
+  tryCurrentEndpoint = () => { // attempt at using auth.js secure auth
+    const { token, email } = this.state
+
+    fetch(DOMAIN + 'api/users/current', {
+      method: 'GET',
+      "headers": {
+        "Content-Type": "application/json; charset=utf-8",
+          authorization: token && 'Token ' + token
+      },
+      // body: JSON.stringify({token, email, socketId })
+
+    }).then(res=>res.json()).then(res=>{
+      console.log(res)
+      this.appendToMessages(res.user.email)
+    })
+    .catch((error) => {
+      console.log('request had error')
+      this.setState({errorMessage: 'invalid endpoint attempt'})      
+    });    
+  }
+
   componentDidMount = () => {
     const { socket } = this.state
     socket.on('secure', mes => this.appendToMessages(mes.data));
     socket.on('pong', mes => this.appendToMessages(mes))
 
-    const oldJwt = window.localStorage.getItem('jwt')
-    const oldName = window.localStorage.getItem('name')
-    const oldImage = window.localStorage.getItem('image')
-    const oldEmail = window.localStorage.getItem('email')
+    const cookies = new Cookies()
+    const oldJwt = cookies.get('jwt')
+    const oldEmail = cookies.get('email')
 
-    const currentUrl = document.location.href
-    const requestHasToken = currentUrl.indexOf('token=') > -1
-    if (requestHasToken) {
-      const { name, image, token, email } = parseUrl(currentUrl)
-
-      const parsedName = name.indexOf('%20') > -1 ? name.split('%20')[0] : name
-      this.setState({token, name: parsedName, loggedIn: true, image, email})
-      
-      window.localStorage.setItem("jwt", token);
-      // once refreshing checks server for auth, we won't need these because we'll get them when we authenticate
-      window.localStorage.setItem("name", parsedName);
-      window.localStorage.setItem("image", image);
-      window.localStorage.setItem("email", email);
-
-      this.props.history.push("/");
+    if(oldJwt){
+      console.log(oldJwt, oldEmail)
+      this.attemptLogin(oldEmail, null, oldJwt)
     }
-    else if (oldJwt && oldName) {
-      // TODO actually send creds to server, if JWT is still good, login and send profile image to client
-      this.setState({token: oldJwt, name: oldName, image: oldImage, email: oldEmail})
+    else {
+
+      const oldName = window.localStorage.getItem('name')
+      const oldImage = window.localStorage.getItem('image')
+      // const oldEmail = window.localStorage.getItem('email')
+
+      const currentUrl = document.location.href
+      const requestHasToken = currentUrl.indexOf('token=') > -1
+      if (requestHasToken) {
+        const { name, image, token, email } = parseUrl(currentUrl)
+
+        const parsedName = name.indexOf('%20') > -1 ? name.split('%20')[0] : name
+        this.setState({token, name: parsedName, loggedIn: true, image, email})
+        
+        cookies.set("jwt", token, { path: '/', expires: new Date(Date.now()+604800000) });
+        cookies.set("email", email, { path: '/', expires: new Date(Date.now()+604800000) });
+        // once refreshing checks server for auth, we won't need these because we'll get them when we authenticate
+        window.localStorage.setItem("name", parsedName);
+        window.localStorage.setItem("image", image);
+        // window.localStorage.setItem("email", email);
+
+        this.props.history.push("/");
+      }
+      else if (oldJwt && oldName) {
+        // TODO actually send creds to server, if JWT is still good, login and send profile image to client
+        this.setState({token: oldJwt, name: oldName, image: oldImage, email: oldEmail})
+      }
     }
   }
 
@@ -135,10 +182,13 @@ class App extends Component {
     
     this.setState({loggedIn: false, name: '', image: '', token: '', email: '', emailField: '', messages: []})
     
-    window.localStorage.setItem("jwt", '');
+    const cookies = new Cookies()
+    cookies.remove('jwt', { path: '/' });
+    cookies.remove('email', { path: '/' });
+    
     window.localStorage.setItem("name", '');
     window.localStorage.setItem("image", '');
-    window.localStorage.setItem("email", '');
+    // window.localStorage.setItem("email", '');
   }
 
   render() {
@@ -171,9 +221,10 @@ class App extends Component {
           {errorMessage && <div>{errorMessage}</div>}
           {!token && <GoogleButton />}
           {token && <button onClick={this.trySecureEndpoint}>Secure End point</button>}
+          {token && <button onClick={this.tryCurrentEndpoint}>Current Secure End point</button>}
           {token && <LogoutButton name={name} handleClick={this.logout} />}
           {messages.length ?
-            <Responses> 
+            <Responses>
               {messages.map((mes, i)=><div key={i}>{mes}</div>)}
             </Responses>
           : null}

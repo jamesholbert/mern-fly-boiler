@@ -30,8 +30,8 @@ router.get('/auth/google/callback', passport.authenticate('google', { failureRed
 	const addName = '&name='+req.user.username
 	const addImage = '&image='+req.user.profileImage
 	const addEmail = '&email='+req.user.email
+	console.log(req.user)
 	res.redirect(process.env.BASE_CALLBACK_URI + addToken + addName + addImage + addEmail+'&burner')
 });
-
 
 module.exports = router;
