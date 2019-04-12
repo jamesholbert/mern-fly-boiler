@@ -9,10 +9,9 @@ This is my MERN stack boilerplate, complete with a few extra additions for your 
 #### Extras:
 * sample mongoose models and routes
 * local auth using JWT
-* google oauth2
+* google oauth2 also using JWT
 * socket.io for live server updates with access to database
-* React Router (not yet fully implemented)
-* Redux complete with reducer factories (coming soon)
+* React Router
 
 ### Getting Started:
 * rename or copy `.env.template` to `.env`
