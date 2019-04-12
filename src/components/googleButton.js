@@ -36,7 +36,7 @@ const SvgIcon = styled.span`
 `
 
 const GoogleButton = () => (
-	<Container href={DOMAIN + "api/google/auth/google"} className="button">
+	<Container href={DOMAIN + "api/google/auth"} className="button">
 	  <div>
 	    <SvgIcon className="svgIcon t-popup-svg">
 	      <svg

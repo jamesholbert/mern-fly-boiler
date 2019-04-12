@@ -27,7 +27,7 @@ passport.use(new LocalStrategy({
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: process.env.BASE_CALLBACK_URI+"api/google/auth/google/callback"
+    callbackURL: process.env.BASE_CALLBACK_URI+"api/google/auth/callback"
   },
   function(token, tokenSecret, profile, done) {
   	User.findOne({ email: profile.emails[0].value}).then(currentUser => {

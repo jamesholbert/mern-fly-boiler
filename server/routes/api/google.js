@@ -12,20 +12,20 @@ passport.deserializeUser(function(user, done) {
   done(null, user);
 });
 
-// GET /auth/google
+// GET /auth
 //   Use passport.authenticate() as route middleware to authenticate the
 //   request.  The first step in Google authentication will involve redirecting
 //   the user to google.com.  After authorization, Google will redirect the user
-//   back to this application at /auth/google/callback
-router.get('/auth/google', passport.authenticate('google', { scope: 'profile email' }));
+//   back to this application at /auth/callback
+router.get('/auth', passport.authenticate('google', { scope: 'profile email' }));
 
-// GET /auth/google/callback
+// GET /auth/callback
 //   Use passport.authenticate() as route middleware to authenticate the
 //   request.  If authentication fails, the user will be redirected back to the
 //   login page.  Otherwise, the primary route function function will be called,
 //   which, in this example, will redirect the user to the home page.
 
-router.get('/auth/google/callback', passport.authenticate('google', { failureRedirect: '/login' }), function (req, res) {
+router.get('/auth/callback', passport.authenticate('google', { failureRedirect: '/login' }), function (req, res) {
 	const addName = '&name='+req.user.username
 	const addImage = '&image='+req.user.profileImage
 	const addEmail = '&email='+req.user.email

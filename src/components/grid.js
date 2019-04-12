@@ -10,7 +10,8 @@ const Grid = ({ numColumns, gap, rowGap, height, children }) => {
 				gridRowGap: rowGap,
 				marginTop: '5px',
 				height: height || null,
-				transition: '.5s'
+				transition: '.5s',
+				width: '100%'
 			}}
 		>
 			{children}

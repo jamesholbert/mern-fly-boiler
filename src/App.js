@@ -4,21 +4,19 @@ import './App.css';
 
 import styled from 'styled-components'
 import Cookies from 'universal-cookie'
-
 import openSocket from 'socket.io-client';
 
 import GoogleButton from './components/googleButton'
 import LogoutButton from './components/logoutButton'
+import Grid, { Cell } from './components/grid'
 
 import { DOMAIN, parseUrl } from './helpers'
 
 class App extends Component {
   state={
-    response: '',
     emailField: '',
     email: '',
     password: '',
-    loggedIn: false,
     errorMessage: '',
     token: '',
     name: '',
@@ -59,7 +57,7 @@ class App extends Component {
         const { token, name, image, email } = res.user
         const parsedName = name.indexOf(' ') > -1 ? name.split(' ')[0] : name
         
-        this.setState({loggedIn: true, errorMessage: '', password: '', token, name: parsedName, image, email})
+        this.setState({errorMessage: '', password: '', token, name: parsedName, image, email})
         
         const cookies = new Cookies()
         cookies.set("jwt", token, { path: '/', expires: new Date(Date.now()+604800000) });
@@ -106,7 +104,7 @@ class App extends Component {
   // }
 
   tryCurrentEndpoint = () => {
-    const { token, email } = this.state
+    const { token } = this.state
 
     fetch(DOMAIN + 'api/users/current', {
       method: 'GET',
@@ -144,7 +142,7 @@ class App extends Component {
         const { name, image, token, email } = parseUrl(currentUrl)
 
         const parsedName = name.indexOf('%20') > -1 ? name.split('%20')[0] : name
-        this.setState({token, name: parsedName, loggedIn: true, image, email})
+        this.setState({token, name: parsedName, image, email})
         
         cookies.set("jwt", token, { path: '/', expires: new Date(Date.now()+604800000) });
         cookies.set("email", email, { path: '/', expires: new Date(Date.now()+604800000) });
@@ -157,7 +155,7 @@ class App extends Component {
   logout = e => {
     e.preventDefault()
     
-    this.setState({loggedIn: false, name: '', image: '', token: '', email: '', emailField: '', messages: []})
+    this.setState({name: '', image: '', token: '', email: '', emailField: '', messages: []})
     
     const cookies = new Cookies()
     cookies.remove('jwt', { path: '/' });
@@ -167,6 +165,7 @@ class App extends Component {
   render() {
     const { emailField, password, errorMessage, token, name, image, messages } = this.state
 
+    const messageColumns = window.innerWidth > 1000 ? 3 : 1; 
     return (
       <div className="App">
         <header className="App-header">
@@ -176,7 +175,6 @@ class App extends Component {
           }
           <button onClick={this.endPointPing}>End point ping...</button>
           <button onClick={this.socketPing}>Socket ping...</button>
-          {this.state.response}
           {
             token ? 
               <Fragment>
@@ -196,11 +194,15 @@ class App extends Component {
           {/*token && <button onClick={this.trySecureEndpoint}>Secure End point</button>*/}
           {token && <button onClick={this.tryCurrentEndpoint}>Secure End point</button>}
           {token && <LogoutButton name={name} handleClick={this.logout} />}
-          {messages.length ?
-            <Responses>
-              {messages.map((mes, i)=><div key={i}>{mes}</div>)}
-            </Responses>
-          : null}
+          <MessageContainer>
+            <Grid numColumns={messageColumns}>
+              <Cell />
+              <Responses>
+                {messages.map((mes, i)=><div key={i}>{mes}</div>)}
+              </Responses>
+              <Cell />
+            </Grid>
+          </MessageContainer>
         </header>
       </div>
     );
@@ -210,14 +212,19 @@ class App extends Component {
 export default App;
 
 const Responses = styled.div`
-  position: fixed;
-  bottom: 5px;
   max-height: 200px;
-  max-width: 25%;
   min-height: 200px;
-  min-width: 25%;
+  width: 100%;
   overflow: scroll;
   border: solid 1px white;
   border-radius: 3px;
   font-size: 15px;
+`
+
+const MessageContainer = styled.div`
+  position: fixed;
+  bottom: 5px;
+  width: 100%;
+  // margin: 10px;
+  padding: 10px;
 `

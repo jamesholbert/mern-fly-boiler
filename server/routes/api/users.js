@@ -114,7 +114,7 @@ router.get('/current', auth.required, (req, res, next) => {
 });
 
 //POST current route (required, only authenticated users have access)
-router.post('/refreshlogin', auth.optional, (req, res, next) => {
+router.post('/refreshlogin', auth.required, (req, res, next) => {
   const { payload: { id } } = req;
 
   return Users.findById(id)
