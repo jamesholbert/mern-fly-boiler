@@ -16,7 +16,6 @@ class App extends Component {
     emailField: '',
     email: '',
     password: '',
-    errorMessage: '',
     token: '',
     name: '',
     socket: openSocket(DOMAIN),
@@ -56,7 +55,7 @@ class App extends Component {
         const { token, name, image, email } = res.user
         const parsedName = name.indexOf(' ') > -1 ? name.split(' ')[0] : name
         
-        this.setState({errorMessage: '', password: '', token, name: parsedName, image, email})
+        this.setState({password: '', token, name: parsedName, image, email})
         
         const cookies = new Cookies()
         cookies.set("jwt", token, { path: '/', expires: new Date(Date.now()+604800000) });
@@ -64,16 +63,16 @@ class App extends Component {
       }
       else if (res.errors) {
         const keys = Object.keys(res.errors)
-        this.setState({errorMessage: 'problem with: ' + keys.join(', ')})
+        this.appendToMessages('problem with: ' + keys.join(', '))
       }
       else {
         console.log(res)
-        this.setState({errorMessage: 'error: ' + res})        
+        this.appendToMessages('error: ' + res)
       }
     })
     .catch((error) => {
       console.log('request had error')
-      this.setState({errorMessage: 'invalid login'})      
+      this.appendToMessages('error: invalid login')
     });
   }
 
@@ -118,7 +117,7 @@ class App extends Component {
     })
     .catch((error) => {
       console.log('request had error')
-      this.setState({errorMessage: 'invalid endpoint attempt'})      
+      this.appendToMessages('errorMessage: invalid endpoint attempt')
     });    
   }
 
@@ -162,7 +161,7 @@ class App extends Component {
   }
 
   render() {
-    const { emailField, password, errorMessage, token, name, image, messages, chatHistory, socket } = this.state
+    const { emailField, password, token, name, image, messages, chatHistory, socket } = this.state
 
     const messageColumns = window.innerWidth > 1000 ? 3 : 1; 
     return (
@@ -188,7 +187,6 @@ class App extends Component {
                 <button onClick={this.handleLoginLocal}>login</button>
               </Fragment>
           }
-          {errorMessage && <div>{errorMessage}</div>}
           {!token && <GoogleButton />}
           {/*token && <button onClick={this.trySecureEndpoint}>Secure End point</button>*/}
           {token && <button onClick={this.trySecureEndpoint}>Message from Secure End point</button>}
