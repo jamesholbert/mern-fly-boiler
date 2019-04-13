@@ -9,13 +9,14 @@ import bodyParser from 'body-parser';
 import noteRoutes from './routes/note-routes.js';
 import fs from 'fs'
 
-var session = require('express-session')
-const passport = require('passport');
-var socketIO = require('socket.io');
+import session from 'express-session'
+import passport from 'passport';
+import socketIO from 'socket.io';
 
-const app = express();
 
 // App setup
+const app = express();
+
 app.use(cors({
   origin: 'http://localhost:3000'
 }))
@@ -34,8 +35,9 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-// DB Setup
 
+
+// DB Setup
 const db = mongoose
   .connect(
     process.env.DB_ADDRESS,
@@ -44,14 +46,13 @@ const db = mongoose
   .then(res => console.log('Now connected to database'));
 require('./models/users-model.js');
 require('./config/passport');
-app.use(require('./routes'));
+
 
 
 // API routes
-// app.use('/notes', noteRoutes);
-
+app.use(require('./routes')); // the /routes doesn't affect the actual route using this method
+app.use('/notes', noteRoutes); // the /notes does affect the actual route using this method
 app.get('/ping', (req, res) => res.send(JSON.stringify('pong')));
-
 app.get('/', (req, res) => res.sendFile(`${__dirname}/../build/index.html`));
 
 
@@ -60,28 +61,42 @@ app.get('/', (req, res) => res.sendFile(`${__dirname}/../build/index.html`));
 const port = process.env.PORT || 8080;
 const server = http.createServer(app);
 
-
+// set up socket.io and `directory`` of rooms keyed by user
 const io = socketIO(server)
-app.set('io', io)
+const directory = {}
 
+// put `io`` and `directory`` on the app so that they can be access on api endpoints
+app.set('io', io)
+app.set('directory', directory)
+
+// when a user connects, they are accessed here as `socket`
 io.on('connection', socket => {
     console.log('Client connected...');
     
-    socket.on('join', function(data) {
-        console.log(data);
+    directory[socket.id] = 'room2'
+    socket.join('room2')
+    socket.room = 'room2' // want to know .room so we know what room to leave later if the user changes rooms
+    
+    socket.on('join', room => {
+      directory[socket.id] = room
+
+      socket.leave(socket.room)
+      socket.room = room
+      socket.join(room)
     });
 
     socket.on('disconnect', () => {
       console.log('disconnected')
     })
 
-    socket.on('socketping', client => {
+    socket.on('message', data => {
       console.log('ping')
-      socket.emit('pong', 'socket pong')
+      socket.emit('message', 'socket pong')
     })
 })
 
 
+
 server.listen(port, () =>
-  console.log(`Have better tabletop at port: ${port}`)
+  console.log(`Server running at port: ${port}`)
 );

@@ -2,15 +2,13 @@ import React from 'react'
 
 import styled from 'styled-components'
 
-const Container = styled.a`
-
+const Container = styled.button`
+	margin: 10px;
 `
 
 const LogoutButton = ({ name, handleClick }) => (
-	<Container href='' onClick={handleClick}>
-	  <div>
-	    <span className="button-label">Logout of {name}</span>
-	  </div>
+	<Container onClick={handleClick}>
+    	<span className="button-label">Logout of {name}</span>
 	</Container>
 )
 

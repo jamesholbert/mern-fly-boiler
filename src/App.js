@@ -39,7 +39,8 @@ class App extends Component {
 
   socketPing = () => {
     console.log('socket ping...')
-    this.state.socket.emit('socketping', ()=>console.log('tried'))
+    this.state.socket.emit('message', 'hello')
+    console.log(this.state.socket.room)
   }
 
   attemptLogin = (emailField, password = null, token = null, endpoint = 'login') => {
@@ -103,10 +104,10 @@ class App extends Component {
   //   });    
   // }
 
-  tryCurrentEndpoint = () => {
+  trySecureEndpoint = () => {
     const { token, socket: { id: socketId } } = this.state
 
-    fetch(DOMAIN + 'api/users/current', {
+    fetch(DOMAIN + 'api/users/secure', {
       method: 'GET',
       headers: {
         "Content-Type": "application/json; charset=utf-8",
@@ -115,7 +116,8 @@ class App extends Component {
       }
 
     }).then(res=>res.json()).then(res=>{
-      this.appendToMessages(res.user.email)
+      // this.appendToMessages(res.user.email)
+      console.log(res)
     })
     .catch((error) => {
       console.log('request had error')
@@ -125,8 +127,8 @@ class App extends Component {
 
   componentDidMount = () => {
     const { socket } = this.state
-    socket.on('secure', mes => this.appendToMessages('secure: '+mes.data));
-    socket.on('pong', mes => this.appendToMessages('pong: '+mes))
+    socket.on('secureMessage', mes => this.appendToMessages('secure: '+mes.data));
+    socket.on('message', mes => this.appendToMessages('pong: '+mes))
 
     const cookies = new Cookies()
     const oldJwt = cookies.get('jwt')
@@ -162,6 +164,10 @@ class App extends Component {
     cookies.remove('email', { path: '/' });
   }
 
+  joinRoom = room => {
+    this.state.socket.emit('join', room)
+  }
+
   render() {
     const { emailField, password, errorMessage, token, name, image, messages } = this.state
 
@@ -192,11 +198,15 @@ class App extends Component {
           {errorMessage && <div>{errorMessage}</div>}
           {!token && <GoogleButton />}
           {/*token && <button onClick={this.trySecureEndpoint}>Secure End point</button>*/}
-          {token && <button onClick={this.tryCurrentEndpoint}>Secure End point</button>}
+          {token && <button onClick={this.trySecureEndpoint}>Message from Secure End point</button>}
           {token && <LogoutButton name={name} handleClick={this.logout} />}
           <MessageContainer>
-            <Grid numColumns={messageColumns}>
-              <Cell />
+            <Grid numColumns={3}>
+              <Responses>
+                <button onClick={()=>this.joinRoom('room1')}>Join room1</button>
+                <button onClick={()=>this.joinRoom('room2')}>Join room2</button>
+                <button onClick={()=>this.joinRoom('room3')}>Join room3</button>
+              </Responses>
               <Responses>
                 {messages.map((mes, i)=><div key={i}>{mes}</div>)}
               </Responses>

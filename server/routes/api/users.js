@@ -100,11 +100,16 @@ router.post('/login', auth.optional, (req, res, next) => {
 });
 
 //GET current route (required, only authenticated users have access)
-router.get('/current', auth.required, (req, res, next) => {
-  const io = req.app.get('io')
-  const { payload: { id } } = req;
+router.get('/secure', auth.required, (req, res, next) => {
+  const { payload: { id }, session: { socketId } } = req;
 
-  io.in(req.session.socketId).emit('secure', {data: 'secure from socket'})
+  const io = req.app.get('io')
+  let directory = req.app.get('directory')
+  const room = directory[socketId];
+
+  io.in(room).emit('secureMessage', {data: room+' chat'})
+  // io.in(socketId).emit('secureMessage', {data: 'secure from socket'}) // this would send a message to only this user
+  // io.emit('secure', {data: 'secure from socket'}) // this would send a mesage to everyone as a 'secure' event
 
   return Users.findById(id)
     .then((user) => {
