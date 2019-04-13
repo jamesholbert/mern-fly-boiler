@@ -48,7 +48,7 @@ class App extends Component {
     fetch('/api/users/'+endpoint, {
       method: 'POST',
       headers: {
-          "Content-Type": "application/json; charset=utf-8",
+          'content-type': "application/json; charset=utf-8",
           authorization: token && 'Token ' + token
       },
       body: JSON.stringify({user})
@@ -104,17 +104,17 @@ class App extends Component {
   // }
 
   tryCurrentEndpoint = () => {
-    const { token } = this.state
+    const { token, socket: { id: socketId } } = this.state
 
     fetch(DOMAIN + 'api/users/current', {
       method: 'GET',
-      "headers": {
+      headers: {
         "Content-Type": "application/json; charset=utf-8",
-          authorization: token && 'Token ' + token
+        authorization: token && 'Token ' + token,
+        socketId
       }
 
     }).then(res=>res.json()).then(res=>{
-      console.log(res)
       this.appendToMessages(res.user.email)
     })
     .catch((error) => {

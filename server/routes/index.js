@@ -6,7 +6,7 @@ const router = express.Router();
 // With that socket id we can send back the right user info to the right 
 // socket
 router.use((req, res, next) => {
-  req.session.socketId = req.body.socketId
+  req.session.socketId = req.body.socketId || req.headers.socketid
 
   next()
 })
