@@ -136,7 +136,7 @@ router.post('/refreshlogin', auth.required, (req, res, next) => {
 });
 
 // router
-//   .route('/secure')
+//   .route('/oldsecure')
 //   .post((req, res) => {
 //     const io = req.app.get('io')
 

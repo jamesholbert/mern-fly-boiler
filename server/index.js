@@ -83,6 +83,7 @@ io.on('connection', socket => {
       socket.leave(socket.room)
       socket.room = room
       socket.join(room)
+      socket.emit('newRoom', room)
     });
 
     socket.on('disconnect', () => {
@@ -92,6 +93,13 @@ io.on('connection', socket => {
     socket.on('message', data => {
       console.log('ping')
       socket.emit('message', 'socket pong')
+    })
+
+    socket.on('chat', chat => {
+      console.log(socket.room+' chat: '+chat)
+      socket.in(socket.room).emit('chat', chat)
+      // socket.in(socket.id).emit('chat', chat)
+      // socket.emit('chat', chat)
     })
 })
 

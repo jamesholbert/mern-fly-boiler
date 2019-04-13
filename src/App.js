@@ -1,14 +1,13 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component, Fragment, useState, useEffect } from 'react';
 import logo from './logo.svg';
 import './App.css';
 
-import styled from 'styled-components'
 import Cookies from 'universal-cookie'
 import openSocket from 'socket.io-client';
 
 import GoogleButton from './components/googleButton'
+import MessageCenter from './components/messageCenter'
 import LogoutButton from './components/logoutButton'
-import Grid, { Cell } from './components/grid'
 
 import { DOMAIN, parseUrl } from './helpers'
 
@@ -25,20 +24,19 @@ class App extends Component {
     messages: []
   }
 
-  appendToMessages = message => {
-    let { messages } = this.state
-    messages.unshift(message)
-    this.setState({messages})
-  }
-
   endPointPing = () => {
     fetch('/ping')
       .then(res=>res.json())
       .then(res=>this.appendToMessages(res))
   }
 
+  appendToMessages = message => {
+    let newMessages = this.state.messages
+    newMessages.unshift(message)
+    this.setState({newMessages})
+  }
+
   socketPing = () => {
-    console.log('socket ping...')
     this.state.socket.emit('message', 'hello')
     console.log(this.state.socket.room)
   }
@@ -85,10 +83,10 @@ class App extends Component {
     this.attemptLogin(emailField, password)
   }
 
-  // trySecureEndpoint = () => {
+  // tryOldSecureEndpoint = () => {
   //   const { token, email, socket: { id: socketId } } = this.state
 
-  //   fetch(DOMAIN + 'api/users/secure', {
+  //   fetch(DOMAIN + 'api/users/oldsecure', {
   //     method: 'POST',
   //     "headers": {
   //       "Content-Type": "application/json; charset=utf-8"
@@ -116,8 +114,7 @@ class App extends Component {
       }
 
     }).then(res=>res.json()).then(res=>{
-      // this.appendToMessages(res.user.email)
-      console.log(res)
+      this.appendToMessages('email: '+res.user.email)
     })
     .catch((error) => {
       console.log('request had error')
@@ -164,12 +161,8 @@ class App extends Component {
     cookies.remove('email', { path: '/' });
   }
 
-  joinRoom = room => {
-    this.state.socket.emit('join', room)
-  }
-
   render() {
-    const { emailField, password, errorMessage, token, name, image, messages } = this.state
+    const { emailField, password, errorMessage, token, name, image, messages, chatHistory, socket } = this.state
 
     const messageColumns = window.innerWidth > 1000 ? 3 : 1; 
     return (
@@ -200,19 +193,7 @@ class App extends Component {
           {/*token && <button onClick={this.trySecureEndpoint}>Secure End point</button>*/}
           {token && <button onClick={this.trySecureEndpoint}>Message from Secure End point</button>}
           {token && <LogoutButton name={name} handleClick={this.logout} />}
-          <MessageContainer>
-            <Grid numColumns={3}>
-              <Responses>
-                <button onClick={()=>this.joinRoom('room1')}>Join room1</button>
-                <button onClick={()=>this.joinRoom('room2')}>Join room2</button>
-                <button onClick={()=>this.joinRoom('room3')}>Join room3</button>
-              </Responses>
-              <Responses>
-                {messages.map((mes, i)=><div key={i}>{mes}</div>)}
-              </Responses>
-              <Cell />
-            </Grid>
-          </MessageContainer>
+          <MessageCenter {...{socket, messages}}/>
         </header>
       </div>
     );
@@ -220,21 +201,3 @@ class App extends Component {
 }
 
 export default App;
-
-const Responses = styled.div`
-  max-height: 200px;
-  min-height: 200px;
-  width: 100%;
-  overflow: scroll;
-  border: solid 1px white;
-  border-radius: 3px;
-  font-size: 15px;
-`
-
-const MessageContainer = styled.div`
-  position: fixed;
-  bottom: 5px;
-  width: 100%;
-  // margin: 10px;
-  padding: 10px;
-`
