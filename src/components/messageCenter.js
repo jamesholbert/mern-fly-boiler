@@ -5,8 +5,8 @@ import styled from 'styled-components'
 import Grid, { Cell } from './grid'
 
 const Responses = styled.div`
-  max-height: 200px;
-  min-height: 200px;
+  max-height: ${()=>window.innerHeight < 450 ? '100px' : '200px'};
+  min-height: ${()=>window.innerHeight < 450 ? '100px' : '200px'};
   width: 100%;
   overflow: scroll;
   border: solid 1px white;
@@ -15,7 +15,7 @@ const Responses = styled.div`
 `
 
 const MessageContainer = styled.div`
-  position: fixed;
+  position: ${()=>window.innerHeight < 700 ? '' : 'fixed'};
   bottom: 5px;
   width: 100%;
   padding: 10px;
@@ -64,15 +64,19 @@ const MessageCenter = ({ socket, messages }) => {
     newChatHistory.unshift(chat)
     setChatHistory(newChatHistory)
   }
+  
+  const messageColumns = window.innerWidth > 600 ? 3 : 1; 
 
   return (
     <MessageContainer>
-      <Grid numColumns={3}>
+      <Grid numColumns={messageColumns}>
         <Responses>
-          <button onClick={()=>joinRoom('room1')}>Join room1</button>
-          <button onClick={()=>joinRoom('room2')}>Join room2</button>
-          <button onClick={()=>joinRoom('room3')}>Join room3</button>
-          {room}
+          <div>
+            <button onClick={()=>joinRoom('room1')}>Join room1</button>
+            <button onClick={()=>joinRoom('room2')}>Join room2</button>
+            <button onClick={()=>joinRoom('room3')}>Join room3</button>
+          </div>
+          Room: {room}
           <input
             value={chatMessage}
             placeholder='chat...'

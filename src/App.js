@@ -163,7 +163,6 @@ class App extends Component {
   render() {
     const { emailField, password, token, name, image, messages, chatHistory, socket } = this.state
 
-    const messageColumns = window.innerWidth > 1000 ? 3 : 1; 
     return (
       <div className="App">
         <header className="App-header">
@@ -191,7 +190,10 @@ class App extends Component {
           {/*token && <button onClick={this.trySecureEndpoint}>Secure End point</button>*/}
           {token && <button onClick={this.trySecureEndpoint}>Message from Secure End point</button>}
           {token && <LogoutButton name={name} handleClick={this.logout} />}
-          <MessageCenter {...{socket, messages}}/>
+          <MessageCenter 
+            {...{socket, messages}}
+            // mobileView={window}
+          />
         </header>
       </div>
     );
