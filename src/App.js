@@ -161,7 +161,7 @@ class App extends Component {
   }
 
   render() {
-    const { emailField, password, token, name, image, messages, chatHistory, socket } = this.state
+    const { emailField, password, token, name, image, messages, chatHistory, socket, email } = this.state
 
     return (
       <div className="App">
@@ -191,8 +191,8 @@ class App extends Component {
           {token && <button onClick={this.trySecureEndpoint}>Message from Secure End point</button>}
           {token && <LogoutButton name={name} handleClick={this.logout} />}
           <MessageCenter 
-            {...{socket, messages}}
-            // mobileView={window}
+            {...{socket, messages, email}}
+            appendToMessages={this.appendToMessages}
           />
         </header>
       </div>

@@ -5,8 +5,8 @@ import styled from 'styled-components'
 import Grid, { Cell } from './grid'
 
 const Responses = styled.div`
-  max-height: ${()=>window.innerHeight < 450 ? '100px' : '200px'};
-  min-height: ${()=>window.innerHeight < 450 ? '100px' : '200px'};
+  height: 250px;
+  max-height: 250px;
   width: 100%;
   overflow: scroll;
   border: solid 1px white;
@@ -15,13 +15,12 @@ const Responses = styled.div`
 `
 
 const MessageContainer = styled.div`
-  position: ${()=>window.innerHeight < 700 ? '' : 'fixed'};
   bottom: 5px;
   width: 100%;
   padding: 10px;
 `
 
-const MessageCenter = ({ socket, messages }) => {
+const MessageCenter = ({ socket, messages, appendToMessages, email }) => {
   const [ chatMessage, setChatMessage ] = useState('')
   const [ chatHistory, setChatHistory ] = useState([])
   const [ room, setRoom ] = useState('room2')
@@ -45,13 +44,14 @@ const MessageCenter = ({ socket, messages }) => {
 
   const joinRoom = room => {
     socket.emit('join', room)
+    appendToMessages('joined '+room)
   }
 
   const chatKeyPressed = (event) => {
     var code = event.keyCode || event.which;
     if(code === 13) { //13 is the `enter` keycode
-        socket.emit('chat', chatMessage)
-        appendToChat(chatMessage)
+        socket.emit('chat', email+': '+chatMessage)
+        appendToChat(email+': '+chatMessage)
         setChatMessage('')
     }
   }
@@ -64,12 +64,13 @@ const MessageCenter = ({ socket, messages }) => {
     newChatHistory.unshift(chat)
     setChatHistory(newChatHistory)
   }
-  
-  const messageColumns = window.innerWidth > 600 ? 3 : 1; 
 
   return (
     <MessageContainer>
-      <Grid numColumns={messageColumns}>
+      <Grid numColumns={2}>
+        <Responses>
+          {messages.map((mes, i)=><div key={i}>{mes}</div>)}
+        </Responses>
         <Responses>
           <div>
             <button onClick={()=>joinRoom('room1')}>Join room1</button>
@@ -85,10 +86,6 @@ const MessageCenter = ({ socket, messages }) => {
           />
           {chatHistory.map((chat, i)=><div key={i}>{chat}</div>)}
         </Responses>
-        <Responses>
-          {messages.map((mes, i)=><div key={i}>{mes}</div>)}
-        </Responses>
-        <Cell />
       </Grid>
     </MessageContainer>
   )
