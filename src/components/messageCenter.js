@@ -28,7 +28,7 @@ const MessageCenter = ({ messages, appendToMessages, email, DOMAIN }) => {
   const chatHistoryRef = useRef(chatHistory)
 
   useEffect(()=>{
-    // without this the previous value of chatHistory that `appendToChat()` uses is an empty array
+    // without this the previous value of chatHistory that `appendToChat()` uses is an empty array,
     // perhaps this can be solved otherwise, but normal chat features won't rely purely on the front end
     chatHistoryRef.current = chatHistory
   }, [chatHistory])
@@ -49,9 +49,9 @@ const MessageCenter = ({ messages, appendToMessages, email, DOMAIN }) => {
   }
 
   const appendToChat = chat => { 
-    // Greg doesn't save his chat history in a database.
+    // Billy doesn't save his chat history in a database.
     // not saving your real chat history in the database would be a silly thing.
-    // dont' be like Greg.
+    // dont' be like Billy.
     let newChatHistory = chatHistoryRef.current.slice()
     newChatHistory.unshift(chat)
     setChatHistory(newChatHistory)

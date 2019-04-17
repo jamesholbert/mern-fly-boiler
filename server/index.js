@@ -61,6 +61,8 @@ app.get('/', (req, res) => res.sendFile(`${__dirname}/../build/index.html`));
 const port = process.env.PORT || 8080;
 const server = http.createServer(app);
 
+
+
 // set up socket.io and `directory`` of rooms keyed by user
 const io = socketIO(server)
 const directory = {}
@@ -69,45 +71,50 @@ const directory = {}
 app.set('io', io)
 app.set('directory', directory)
 
-// when a user connects, they are accessed here as `socket`
-io.on('connection', socket => {
+// when a user connects, they are accessed here as `clientSocket`
+io.on('connection', clientSocket => {
     console.log('Client connected...');
     
-    directory[socket.id] = 'room2'
-    socket.join('room2')
-    socket.room = 'room2' // want to know .room so we know what room to leave later if the user changes rooms
+    directory[clientSocket.id] = 'room2'
+    clientSocket.join('room2') 
+    clientSocket.room = 'room2' // want to know .room so we know what room to leave later if the user changes rooms
     
-    socket.on('join', ({room, email}) => {
-      directory[socket.id] = room
+    clientSocket.on('join', ({room, email}) => {
+      // save this so we can access it later
+      directory[clientSocket.id] = room
 
-      socket.leave(socket.room)
-      socket.in(socket.room).emit('someoneLeft', email+' left')
+      clientSocket.leave(clientSocket.room) // the user can be in multiple rooms so remove them when desired
 
-      socket.room = room
-      socket.email = email
-      
-      socket.join(room)
-      socket.emit('newRoom', room)
-      socket.in(room).emit('someoneJoined', email+' joined')
+      // by default the `clientSocket.in(someRoom).emit()` format will emit to all in the room except originator
+      // (the client doesn't need to still be in the room to emit to it)
+      clientSocket.in(clientSocket.room).emit('someoneLeft', email+' left')
+
+      clientSocket.room = room
+      clientSocket.join(room) // think of this like a chat room that the user is now part of
+
+      // the `clientSocket.emit()` format emits only to originator
+      clientSocket.emit('newRoom', room)
+      clientSocket.in(room).emit('someoneJoined', email+' joined')
     });
 
-    socket.on('disconnect', () => {
-      socket.in(socket.room).emit('someoneLeft', socket.email+' left')
+    clientSocket.on('disconnect', () => {
+      clientSocket.in(clientSocket.room).emit('someoneLeft', clientSocket.email+' left')
       console.log('disconnected')
     })
 
-    socket.on('message', data => {
+    clientSocket.on('message', data => {
       console.log('ping')
-      socket.emit('message', 'socket pong')
+      clientSocket.emit('message', 'socket pong')
     })
 
-    socket.on('chat', chat => {
-      socket.in(socket.room).emit('chat', chat)
+    clientSocket.on('chat', chat => {
+      clientSocket.in(clientSocket.room).emit('chat', chat)
     })
 
-    socket.on('connectClient', email => { // probably would be a good place to send what room to go to
-      socket.email = email
-      socket.in(directory[socket.id]).emit('connectedClient', email+' has connected')
+    // `connectClient` would probably be a good place to tell the client what room to go to
+    clientSocket.on('connectClient', email => {
+      clientSocket.email = email
+      clientSocket.in(directory[clientSocket.id]).emit('connectedClient', email+' has connected')
     })
 })
 

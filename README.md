@@ -11,6 +11,7 @@ This is my MERN stack boilerplate, complete with a few extra additions for your 
 * local auth using express-jwt
 * google oauth2 also using JWT
 * socket.io for live server updates with access to database
+* (SocketComponent features solid inversion of control using render props)
 * React Router
 
 ### Getting Started:

@@ -57,11 +57,11 @@ const ExampleUsage = ({ DOMAIN, messages, addMessage }) => {
 					}
 				}
 		]}
-			render={ // the parent component has total control over the presentation of the scoket-connected components
+			render={ // the parent component has total control over the presentation of the socket-connected components
 				({ socket }) => ( // destructured state, could just have `state => (`
 					<MessageBlock // any chatBox UI you create
 						messages={messages}
-						sendMessage={newChat => socket.emit('chat', newChat)} // all emit calls happen in the render
+						sendMessage={newChat => socket.emit('chat', newChat)} // most emit calls happen in the render prop
 					>
 						<button onClick={()=>socket.emit('ping')}>Ping</button>
 					</MessageBlock>
