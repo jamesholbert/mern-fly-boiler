@@ -1,4 +1,4 @@
-import React, { Component, Fragment, useState, useEffect } from 'react';
+import React, { Component, Fragment } from 'react';
 import logo from './logo.svg';
 import './App.css';
 
@@ -161,7 +161,7 @@ class App extends Component {
   }
 
   render() {
-    const { emailField, password, token, name, image, messages, chatHistory, socket, email } = this.state
+    const { emailField, password, token, name, image, messages, email } = this.state
 
     return (
       <div className="App">
@@ -191,7 +191,7 @@ class App extends Component {
           {token && <button onClick={this.trySecureEndpoint}>Message from Secure End point</button>}
           {token && <LogoutButton name={name} handleClick={this.logout} />}
           <MessageCenter 
-            {...{socket, messages, email}}
+            {...{messages, email, DOMAIN}}
             appendToMessages={this.appendToMessages}
           />
         </header>

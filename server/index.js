@@ -77,16 +77,22 @@ io.on('connection', socket => {
     socket.join('room2')
     socket.room = 'room2' // want to know .room so we know what room to leave later if the user changes rooms
     
-    socket.on('join', room => {
+    socket.on('join', ({room, email}) => {
       directory[socket.id] = room
 
       socket.leave(socket.room)
+      socket.in(socket.room).emit('someoneLeft', email+' left')
+
       socket.room = room
+      socket.email = email
+      
       socket.join(room)
       socket.emit('newRoom', room)
+      socket.in(room).emit('someoneJoined', email+' joined')
     });
 
     socket.on('disconnect', () => {
+      socket.in(socket.room).emit('someoneLeft', socket.email+' left')
       console.log('disconnected')
     })
 
@@ -96,10 +102,12 @@ io.on('connection', socket => {
     })
 
     socket.on('chat', chat => {
-      console.log(socket.room+' chat: '+chat)
       socket.in(socket.room).emit('chat', chat)
-      // socket.in(socket.id).emit('chat', chat)
-      // socket.emit('chat', chat)
+    })
+
+    socket.on('connectClient', email => { // probably would be a good place to send what room to go to
+      socket.email = email
+      socket.in(directory[socket.id]).emit('connectedClient', email+' has connected')
     })
 })
 

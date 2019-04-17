@@ -2,7 +2,14 @@ import React, { useState, useEffect, useRef } from 'react'
 
 import styled from 'styled-components'
 
-import Grid, { Cell } from './grid'
+import Grid from './grid'
+import SocketComponent from './socketComponent'
+
+const MessageContainer = styled.div`
+  bottom: 5px;
+  width: 100%;
+  padding: 10px;
+`
 
 const Responses = styled.div`
   height: 250px;
@@ -14,14 +21,8 @@ const Responses = styled.div`
   font-size: 15px;
 `
 
-const MessageContainer = styled.div`
-  bottom: 5px;
-  width: 100%;
-  padding: 10px;
-`
-
-const MessageCenter = ({ socket, messages, appendToMessages, email }) => {
-  const [ chatMessage, setChatMessage ] = useState('')
+const MessageCenter = ({ messages, appendToMessages, email, DOMAIN }) => {
+  const [ chatText, setChatText ] = useState('')
   const [ chatHistory, setChatHistory ] = useState([])
   const [ room, setRoom ] = useState('room2')
   const chatHistoryRef = useRef(chatHistory)
@@ -32,27 +33,18 @@ const MessageCenter = ({ socket, messages, appendToMessages, email }) => {
     chatHistoryRef.current = chatHistory
   }, [chatHistory])
 
-  useEffect(()=>{
-    socket.on('chat', chat => {
-      appendToChat(chat)
-    })
-    socket.on('newRoom', newRoom => {
-      setRoom(newRoom)
-      setChatHistory([])
-    })
-  }, [])
-
-  const joinRoom = room => {
-    socket.emit('join', room)
+  const joinRoom = (room, socket) => {
+    socket.emit('join', {room, email})
     appendToMessages('joined '+room)
+    setRoom(room)
   }
 
-  const chatKeyPressed = (event) => {
+  const chatKeyPressed = (event, socket) => {
     var code = event.keyCode || event.which;
-    if(code === 13) { //13 is the `enter` keycode
-        socket.emit('chat', email+': '+chatMessage)
-        appendToChat(email+': '+chatMessage)
-        setChatMessage('')
+    if(code === 13) { // 13 is the `enter` keycode
+        socket.emit('chat', email+': '+chatText)
+        appendToChat(email+': '+chatText)
+        setChatText('')
     }
   }
 
@@ -65,30 +57,52 @@ const MessageCenter = ({ socket, messages, appendToMessages, email }) => {
     setChatHistory(newChatHistory)
   }
 
+  const rooms = ['room1', 'room2', 'room3'] // this list should probably come from the server but ¯\_(ツ)_/¯ 
+
   return (
     <MessageContainer>
-      <Grid numColumns={2}>
-        <Responses>
-          {messages.map((mes, i)=><div key={i}>{mes}</div>)}
-        </Responses>
-        <Responses>
-          <div>
-            <button onClick={()=>joinRoom('room1')}>Join room1</button>
-            <button onClick={()=>joinRoom('room2')}>Join room2</button>
-            <button onClick={()=>joinRoom('room3')}>Join room3</button>
-          </div>
-          Room: {room}
-          <input
-            value={chatMessage}
-            placeholder='chat...'
-            onKeyPress={chatKeyPressed}
-            onChange={(e)=>setChatMessage(e.target.value)}
-          />
-          {chatHistory.map((chat, i)=><div key={i}>{chat}</div>)}
-        </Responses>
-      </Grid>
+      {email &&
+        <SocketComponent
+          socketAddress={DOMAIN}
+          onConnect={['connectClient', email]}
+          listeners={[
+            {
+              name: ['connectedClient', 'chat', 'someoneJoined', 'someoneLeft'],
+              onEvent: appendToChat
+            },
+            {
+              name: ['newRoom'],
+              onEvent: () => setChatHistory([])
+            }
+          ]}
+          render={({ socket }) => (
+            <Grid numColumns={2}>
+              <Responses>
+                <div>
+                  {rooms.map(room=>
+                    <JoinRoomButton handleClick={()=>joinRoom(room, socket)} room={room} key={room} />
+                  )}
+                </div>
+                Room: {room}
+                <input
+                  value={chatText}
+                  placeholder='chat...'
+                  onKeyPress={(e)=>chatKeyPressed(e, socket)}
+                  onChange={(e)=>setChatText(e.target.value)}
+                />
+                {chatHistory.map((mes, i)=><div key={i}>{mes}</div>)}
+              </Responses>
+              <Responses>
+                {messages.map((mes, i)=><div key={i}>{mes}</div>)}
+              </Responses>
+            </Grid>
+          )}
+        />
+      }
     </MessageContainer>
   )
 }
 
 export default MessageCenter
+
+const JoinRoomButton = ({ room, handleClick }) => <button onClick={handleClick}>Join {room}</button>
