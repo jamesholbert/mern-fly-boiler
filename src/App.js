@@ -99,7 +99,12 @@ class App extends Component {
             render={({socket}) => (
               <Fragment>
                 <button onClick={()=>socket.emit('message')}>Socket ping...</button>
-                <button disabled={token ? false : true} onClick={()=>trySecureEndpoint(token, socket, this.appendToMessages)}>Secure End point</button>
+                <button 
+                  disabled={token ? false : true} 
+                  onClick={()=>trySecureEndpoint(token, socket, this.appendToMessages)}
+                >
+                  Secure End point
+                </button>
               </Fragment>
             )}
           />
