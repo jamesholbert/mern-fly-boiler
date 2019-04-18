@@ -62,21 +62,21 @@ const MessageCenter = ({ messages, appendToMessages, email, DOMAIN }) => {
   return (
     <MessageContainer>
       {email &&
-        <SocketComponent
-          socketAddress={DOMAIN}
-          onConnect={['connectClient', email]}
-          listeners={[
-            {
-              name: ['connectedClient', 'chat', 'someoneJoined', 'someoneLeft'],
-              onEvent: appendToChat
-            },
-            {
-              name: ['newRoom'],
-              onEvent: () => setChatHistory([])
-            }
-          ]}
-          render={({ socket }) => (
-            <Grid numColumns={2}>
+        <Grid numColumns={2}>
+          <SocketComponent
+            socketAddress={DOMAIN}
+            onConnect={['connectClient', email]}
+            listeners={[
+              {
+                name: ['connectedClient', 'chat', 'someoneJoined', 'someoneLeft'],
+                onEvent: appendToChat
+              },
+              {
+                name: ['newRoom'],
+                onEvent: () => setChatHistory([])
+              }
+            ]}
+            render={({ socket }) => (              
               <Responses>
                 <div>
                   {rooms.map(room=>
@@ -92,12 +92,12 @@ const MessageCenter = ({ messages, appendToMessages, email, DOMAIN }) => {
                 />
                 {chatHistory.map((mes, i)=><div key={i}>{mes}</div>)}
               </Responses>
-              <Responses>
-                {messages.map((mes, i)=><div key={i}>{mes}</div>)}
-              </Responses>
-            </Grid>
-          )}
-        />
+            )}
+          />
+          <Responses>
+            {messages.map((mes, i)=><div key={i}>{mes}</div>)}
+          </Responses>
+        </Grid>
       }
     </MessageContainer>
   )

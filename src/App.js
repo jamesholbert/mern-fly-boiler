@@ -3,11 +3,11 @@ import logo from './logo.svg';
 import './App.css';
 
 import Cookies from 'universal-cookie'
-import openSocket from 'socket.io-client';
 
 import GoogleButton from './components/googleButton'
 import MessageCenter from './components/messageCenter'
 import LogoutButton from './components/logoutButton'
+import SocketComponent from './components/socketComponent'
 
 import { DOMAIN, parseUrl } from './helpers'
 
@@ -18,7 +18,6 @@ class App extends Component {
     password: '',
     token: '',
     name: '',
-    socket: openSocket(DOMAIN),
     image: '',
     messages: []
   }
@@ -33,11 +32,6 @@ class App extends Component {
     let newMessages = this.state.messages
     newMessages.unshift(message)
     this.setState({newMessages})
-  }
-
-  socketPing = () => {
-    this.state.socket.emit('message', 'hello')
-    console.log(this.state.socket.room)
   }
 
   attemptLogin = (emailField, password = null, token = null, endpoint = 'login') => {
@@ -82,27 +76,8 @@ class App extends Component {
     this.attemptLogin(emailField, password)
   }
 
-  // tryOldSecureEndpoint = () => {
-  //   const { token, email, socket: { id: socketId } } = this.state
-
-  //   fetch(DOMAIN + 'api/users/oldsecure', {
-  //     method: 'POST',
-  //     "headers": {
-  //       "Content-Type": "application/json; charset=utf-8"
-  //     },
-  //     body: JSON.stringify({token, email, socketId })
-
-  //   }).then(res=>res.json()).then(res=>{
-  //     this.appendToMessages(res.data)
-  //   })
-  //   .catch((error) => {
-  //     console.log('request had error')
-  //     this.setState({errorMessage: 'invalid endpoint attempt'})      
-  //   });    
-  // }
-
-  trySecureEndpoint = () => {
-    const { token, socket: { id: socketId } } = this.state
+  trySecureEndpoint = (token, socket) => {
+    const { id: socketId } = socket
 
     fetch(DOMAIN + 'api/users/secure', {
       method: 'GET',
@@ -122,10 +97,6 @@ class App extends Component {
   }
 
   componentDidMount = () => {
-    const { socket } = this.state
-    socket.on('secureMessage', mes => this.appendToMessages('secure: '+mes.data));
-    socket.on('message', mes => this.appendToMessages('pong: '+mes))
-
     const cookies = new Cookies()
     const oldJwt = cookies.get('jwt')
     const oldEmail = cookies.get('email')
@@ -163,6 +134,17 @@ class App extends Component {
   render() {
     const { emailField, password, token, name, image, messages, email } = this.state
 
+    const listeners = [
+      {
+        name: ['secureMessage'],
+        onEvent: mes => this.appendToMessages('secure: '+mes.data)
+      },
+      {
+        name: ['message'],
+        onEvent: mes => this.appendToMessages('pong: '+mes)
+      }
+    ]
+
     return (
       <div className="App">
         <header className="App-header">
@@ -171,25 +153,29 @@ class App extends Component {
             <img src={logo} className="App-logo" alt="logo" />
           }
           <button onClick={this.endPointPing}>End point ping...</button>
-          <button onClick={this.socketPing}>Socket ping...</button>
-          {
-            token ? 
+          <SocketComponent
+            socketAddress={DOMAIN}
+            listeners={listeners}
+            render={({socket}) => (
               <Fragment>
-                <div>You're logged in!</div>
-                
+                <button onClick={()=>socket.emit('message')}>Socket ping...</button>
+                <button disabled={token ? false : true} onClick={()=>this.trySecureEndpoint(token, socket)}>Secure End point</button>
               </Fragment>
-              : 
-              <Fragment>
+            )}
+          />
+          {token
+            ? <Fragment>
+                <div>You're logged in!</div>
+                <LogoutButton name={name} handleClick={this.logout} />
+              </Fragment>
+            : <Fragment>
                 <button onClick={()=>this.setState({emailField: 'arthesius@gmail.com', password: 'better'})}>autofill :D</button>
                 <input placeholder='email' value={emailField} onChange={e=>this.setState({emailField: e.target.value})} />
                 <input placeholder='password' value={password} onChange={e=>this.setState({password: e.target.value})} />
                 <button onClick={this.handleLoginLocal}>login</button>
+                <GoogleButton />
               </Fragment>
           }
-          {!token && <GoogleButton />}
-          {/*token && <button onClick={this.trySecureEndpoint}>Secure End point</button>*/}
-          {token && <button onClick={this.trySecureEndpoint}>Message from Secure End point</button>}
-          {token && <LogoutButton name={name} handleClick={this.logout} />}
           <MessageCenter 
             {...{messages, email, DOMAIN}}
             appendToMessages={this.appendToMessages}

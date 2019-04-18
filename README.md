@@ -8,10 +8,12 @@ This is my MERN stack boilerplate, complete with a few extra additions for your 
 
 #### Extras:
 * sample mongoose models and routes
-* local auth using express-jwt
-* google oauth2 also using JWT
+* authentication using express-jwt
+    * local auth
+    * google oauth2
 * socket.io for live server updates with access to database
-* (SocketComponent features solid inversion of control using render props)
+    * sample chat features
+    * SocketComponent features inversion of control using render props
 * React Router
 
 ### Getting Started:
