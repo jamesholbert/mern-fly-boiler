@@ -39,35 +39,3 @@ SocketComponent.propTypes = {
 };
 
 export default SocketComponent
-
-const ExampleUsage = ({ DOMAIN, messages, addMessage }) => {
-	return (
-		<SocketComponent
-			socketAddress={DOMAIN}
-			listeners={[ // these get iterated over to become dynamic event listeners `socket.emit('someEvent', ()=>{})`
-				{
-					name: ['pong', 'message', 'userJoined'], // an array in case you have multiple events where you want the same event fired off
-					onEvent: data => console.log(data)
-				},
-				{
-					name: ['doubleAction'],
-					onEvent: (data, socket) => { // the second argument is always the socket in case you need to emit more events
-						console.log(data)
-						socket.emit('someOtherEvent', data.someValue)
-					}
-				}
-		]}
-			render={ // the parent component has total control over the presentation of the socket-connected components
-				({ socket }) => ( // destructured state, could just have `state => (`
-					<MessageBlock // any chatBox UI you create
-						messages={messages}
-						sendMessage={newChat => socket.emit('chat', newChat)} // most emit calls happen in the render prop
-					>
-						<button onClick={()=>socket.emit('ping')}>Ping</button>
-					</MessageBlock>
-				)
-			}
-		/>
-	)
-}
-const MessageBlock = () => <div />

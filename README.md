@@ -44,3 +44,36 @@ Creates static build files for front end. Only necessary in production environme
 ### Procfile is for deployment on Heroku, don't forget to add the necessary `config vars` found in `.env`
 
 The front end was initially bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+
+SocketComponent sample usage:
+
+```
+const LocationSetter = ({ DOMAIN }) => {
+	const [ location, setLocation ] = useState('home')
+
+	return (
+		<SocketComponent
+			socketAddress={DOMAIN}
+			listeners={[ 
+				// these get iterated over to become dynamic event listeners `socket.on('someEvent', ()=>{})`
+				{
+					name: ['changeLocation'], // an array in case you have multiple events where you want the same event fired off
+					onEvent: place => setLocation(place)
+				}
+		]}
+			render={ 
+				// the parent component has total control over the presentation of the socket-connected components
+				// most emit calls happen in the render prop
+				({ socket }) => ( // destructured state, could just have `state => (`
+					<div> {/* any UI you create */}
+						// like normal sockets, whatever you `emit` will trigger a server event where you respond however you want
+						<button onClick={() => socket.emit('changeLocation', 'Store')}>Store</button>
+						<button onClick={() => socket.emit('changeLocation', 'Disneyland')}>Disneyland</button>
+						<button onClick={() => socket.emit('changeLocation', 'Universal Studios')}>Universal Studios</button>
+					</div>
+				)
+			}
+		/>
+	)
+}
+````
