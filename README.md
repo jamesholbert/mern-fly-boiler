@@ -21,7 +21,7 @@ This is my MERN stack boilerplate, complete with a few extra additions for your 
 * fill in appropriate variables in `.env`
     * https://mlab.com/ is a decent place to get a database up and running quickly
     * https://console.developers.google.com/ 
-        * whitelist Authorized JavaScript origins and Authorized JavaScript callback URIs for `http://localhost:8080` AND `http://whatever.your.url.is` respectively)
+        * whitelist Authorized JavaScript origins and Authorized JavaScript callback URIs (`http://localhost:8080` AND `http://whatever.your.url.is` respectively)
 * `yarn install`
 * `yarn build`
 * `yarn start`
@@ -50,7 +50,7 @@ The front end was initially bootstrapped with [Create React App](https://github.
 
 SocketComponent sample usage:
 
-```
+```jsx
 const SkyShip = ({ DOMAIN }) => {
   const [ location, setLocation ] = useState('home')
 

@@ -8,7 +8,6 @@ export const endPointPing = callback => {
   }
 
 export const attemptLogin = (setState, emailField, password = null, token = null, endpoint = 'login') => {
-console.log(setState);
 	const user = token ? {email: emailField, token} : {email: emailField, password}
 
 	fetch('/api/users/'+endpoint, {
