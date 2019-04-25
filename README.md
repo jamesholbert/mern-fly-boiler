@@ -20,11 +20,20 @@ This is my MERN stack boilerplate, complete with a few extra additions for your 
 * rename or copy `.env.template` to `.env`
 * fill in appropriate variables in `.env`
     * https://mlab.com/ is a decent place to get a database up and running quickly
-    * https://console.developers.google.com/ 
-        * whitelist Authorized JavaScript origins and Authorized JavaScript callback URIs (`http://localhost:8080` AND `http://whatever.your.url.is` respectively)
+    * https://console.developers.google.com/
+        * create project, create credentials:
+            * whitelist Authorized JavaScript origins and Authorized JavaScript callback URIs (`http://localhost:8080` AND `http://whatever.your.url.is` respectively)
+        * enable google+ api (drop down in upper left)
 * `yarn install`
 * `yarn build`
 * `yarn start`
+
+### To Deploy to Heroky:
+* create project on heroku
+    * follow steps to set up `heroku git` through `heroku cli`
+    * fill in environment variables in `Settings -> Config Vars`
+        * make sure to have `BASE_CALLBACK_URI` equal to your heroku url like `https://superflyproject.herokuapp.com/`
+    * `git push heroku master`
 
 ## Project Scripts
 
@@ -66,7 +75,7 @@ const SkyShip = ({ DOMAIN }) => {
         }
 	  ]}
       render={ 
-        // the parent component has total control over the presentation of the socket-connected components
+        // <SkyShip /> has total control over the presentation of the socket-connected components
         ({ socket }) => (
           <div> {/* any UI you want */}
             <h3>Ship's current location: {location}</h3>

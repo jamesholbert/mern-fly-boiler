@@ -114,7 +114,6 @@ class App extends Component {
                 <LogoutButton name={name} handleClick={this.logout} />
               </Fragment>
             : <Fragment>
-                <button onClick={()=>this.setState({emailField: 'arthesius@gmail.com', password: 'better'})}>autofill :D</button>
                 <input placeholder='email' value={emailField} onChange={e=>this.setState({emailField: e.target.value})} />
                 <input placeholder='password' value={password} onChange={e=>this.setState({password: e.target.value})} />
                 <button onClick={this.handleLoginLocal}>login</button>
